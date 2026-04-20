@@ -1,6 +1,7 @@
 import os
 from flask import Flask, render_template, request, session, redirect, url_for
 from agente import Agente
+from ia import generar_respuesta
 
 app = Flask(__name__)
 app.secret_key = 'clave_secreta_para_sesion' # Necesario para usar session
@@ -13,9 +14,19 @@ mi_agente = Agente(ruta_documento)
 def procesar_mensaje(mensaje_usuario):
     """
     Controlador para procesar el mensaje del usuario conectando a tu Agente.
+    Si el documento interno no encuentra respuesta, usamos IA generativa (GPT2).
     """
-    respuesta = mi_agente.responder(mensaje_usuario)
-    return respuesta
+    # Intentamos primero con nuestro agente interno
+    respuesta_agente = mi_agente.responder(mensaje_usuario)
+    
+    # Si la respuesta es la de "no encontrado", usamos GPT-2 de transformers
+    if "Lo siento, no he encontrado información" in respuesta_agente:
+        try:
+            return generar_respuesta(mensaje_usuario)
+        except Exception as e:
+            return f"Hubo un error al generar la respuesta con IA: {e}"
+            
+    return respuesta_agente
 
 # --- FASE 1: Configuración de Flask y Rutas ---
 @app.route('/', methods=['GET', 'POST'])
