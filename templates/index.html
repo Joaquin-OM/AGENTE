@@ -45,34 +45,58 @@
             padding: 15px;
             border: 1px solid #dee2e6;
             border-radius: 8px;
-            min-height: 200px;
+            height: 400px; /* Altura fija con scroll */
+            overflow-y: auto;
             background-color: #fafafa;
         }
         .user-msg {
             align-self: flex-end;
             background-color: #007bff;
             color: white;
-            padding: 10px 15px;
-            border-radius: 15px 15px 0 15px;
+            padding: 12px 18px;
+            border-radius: 18px 18px 0 18px;
             max-width: 80%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
         .bot-msg {
             align-self: flex-start;
             background-color: #28a745;
             color: white;
-            padding: 10px 15px;
-            border-radius: 15px 15px 15px 0;
+            padding: 12px 18px;
+            border-radius: 18px 18px 18px 0;
             max-width: 80%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            white-space: pre-wrap; /* Para respetar saltos de línea */
         }
         .empty-history {
             color: #999;
             text-align: center;
             font-style: italic;
-            margin-top: 50px;
+            margin: auto;
         }
         form {
             display: flex;
             gap: 10px;
+            margin-top: 10px;
+        }
+        .footer-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+        }
+        .clear-btn {
+            font-size: 14px;
+            color: #dc3545;
+            text-decoration: none;
+            padding: 5px 10px;
+            border: 1px solid #dc3545;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        .clear-btn:hover {
+            background-color: #dc3545;
+            color: white;
         }
         input[type="text"] {
             flex-grow: 1;
@@ -86,7 +110,7 @@
         input[type="text"]:focus {
             border-color: #80bdff;
         }
-        button {
+        button[type="submit"] {
             background-color: #007bff;
             color: white;
             border: none;
@@ -114,17 +138,18 @@
             <strong>Notificación del Sistema:</strong> {{ mensaje_bienvenida }}
         </div>
 
-        <div class="chat-history">
-            <!-- Comprobamos si hay interacciones previas para mostrarlas -->
-            {% if pregunta_usuario and respuesta_chatbot %}
-                <div class="user-msg">
-                    <strong>Tú:</strong><br>
-                    {{ pregunta_usuario }}
-                </div>
-                <div class="bot-msg">
-                    <strong>Agente:</strong><br>
-                    {{ respuesta_chatbot }}
-                </div>
+        <div id="chat-history" class="chat-history">
+            {% if historial %}
+                {% for interact in historial %}
+                    <div class="user-msg">
+                        <strong>Tú:</strong><br>
+                        {{ interact.usuario }}
+                    </div>
+                    <div class="bot-msg">
+                        <strong>Agente:</strong><br>
+                        {{ interact.bot }}
+                    </div>
+                {% endfor %}
             {% else %}
                 <div class="empty-history">El historial de chat está vacío. Inicia la conversación abajo.</div>
             {% endif %}
@@ -135,7 +160,18 @@
             <input type="text" name="pregunta" placeholder="Escribe tu pregunta aquí..." required autocomplete="off" autofocus>
             <button type="submit">Enviar</button>
         </form>
+
+        <div class="footer-actions">
+            <span></span> <!-- Espaciador -->
+            <a href="/limpiar" class="clear-btn">Limpiar Historial</a>
+        </div>
     </div>
+
+    <script>
+        // Auto-scroll al fondo del historial al cargar la página
+        const chatHistory = document.getElementById('chat-history');
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+    </script>
 
 </body>
 </html>

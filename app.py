@@ -1,8 +1,8 @@
-import os
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, session, redirect, url_for
 from agente import Agente
 
 app = Flask(__name__)
+app.secret_key = 'clave_secreta_para_sesion' # Necesario para usar session
 
 # Instanciar el agente una sola vez al cargar la aplicación Flask
 ruta_documento = os.path.join(os.path.dirname(__file__), "documento.txt")
@@ -19,29 +19,35 @@ def procesar_mensaje(mensaje_usuario):
 # --- FASE 1: Configuración de Flask y Rutas ---
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    respuesta_chatbot = None
-    pregunta_usuario = None
+    if 'historial' not in session:
+        session['historial'] = []
     
-    # Mensaje de bienvenida inicial enviado desde Flask a HTML (Demostración Jinja2)
+    # Mensaje de bienvenida inicial
     mensaje_bienvenida = "¡Hola! Soy tu asistente virtual. ¿En qué puedo ayudarte hoy?"
 
     if request.method == 'POST':
-        # Capturamos la pregunta del usuario desde el formulario
-        pregunta_usuario = request.form.get('pregunta', '')
+        pregunta_usuario = request.form.get('pregunta', '').strip()
         
-        # Procesamos el mensaje a través de nuestro controlador
-        if pregunta_usuario.strip():
+        if pregunta_usuario:
             respuesta_chatbot = procesar_mensaje(pregunta_usuario)
-        else:
-            respuesta_chatbot = "Por favor, escribe una pregunta."
+            # Guardamos en el historial (añadimos al final)
+            session['historial'].append({
+                'usuario': pregunta_usuario,
+                'bot': respuesta_chatbot
+            })
+            # Marcamos la sesión como modificada para que Flask la guarde
+            session.modified = True
 
-    # Renderizamos la plantilla pasando las variables al frontend
     return render_template(
         'index.html', 
         mensaje_bienvenida=mensaje_bienvenida,
-        pregunta_usuario=pregunta_usuario,
-        respuesta_chatbot=respuesta_chatbot
+        historial=session['historial']
     )
+
+@app.route('/limpiar')
+def limpiar():
+    session.pop('historial', None)
+    return redirect(url_for('index'))
 
 if __name__ == '__main__':
     # Ejecutamos la aplicación Flask
