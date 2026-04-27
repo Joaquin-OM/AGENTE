@@ -1,7 +1,7 @@
 import os
 from flask import Flask, render_template, request, session, redirect, url_for
 from agente import Agente
-from ia import generar_respuesta
+from IA import generar_respuesta
 
 app = Flask(__name__)
 app.secret_key = 'clave_secreta_para_sesion' # Necesario para usar session
