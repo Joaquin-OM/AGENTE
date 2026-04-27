@@ -1,33 +1,31 @@
 from transformers import pipeline
 
-# "text-generation" --> será un modelo de generar texto y GPT2 el modelo que se usará
-chatbot = pipeline("text-generation", model="gpt2")
+# Usamos distilgpt2: es la versión "rápida" de gpt2 (mitad de tamaño, doble de velocidad)
+# device=-1 asegura que use la CPU de forma eficiente (o 0 para GPU si está disponible)
+chatbot = pipeline("text-generation", model="distilgpt2", device=-1)
 
 def generar_respuesta(pregunta):
+    # Un prompt estructurado ayuda a que la IA genere una respuesta coherente
+    prompt = f"User asks about: {pregunta}\nShort answer:"
 
-    # Creamos el prompt (En GPT2 mejor en ingles si no tenemos una fuente interna como es en esta práctica)
-    prompt = f"""
-Write a random text about: {pregunta}
-"""
-
-    # Llamamos al modelo para generar texto
+    # Llamamos al modelo con parámetros optimizados para velocidad
     resultado = chatbot(
         prompt,
-        # Número máximo de palabras nuevas que puede generar
-        max_new_tokens=50,
-        # Permite que la IA genere respuestas variadas (no siempre lo mismo)
+        max_new_tokens=40, # Suficiente para una respuesta rápida
         do_sample=True,
-        # Controla la improvisación de la IA de menos improvisación a más
-        temperature=0.5,
-        # Penaliza repetir palabras o frases de más repetición a menos.
-        repetition_penalty=1.2
+        temperature=0.7,
+        repetition_penalty=1.2,
+        pad_token_id=50256 # Evita advertencias de configuración
     )
 
     # El modelo devuelve una lista con resultados
     texto = resultado[0]["generated_text"]
 
-    # Quitamos el prompt original para quedarnos solo con la respuesta
-    respuesta = texto.replace(prompt, "")
+    # Extraemos solo lo generado después de nuestro prompt
+    if "Short answer:" in texto:
+        respuesta = texto.split("Short answer:")[-1]
+    else:
+        respuesta = texto.replace(prompt, "")
 
-    # Eliminamos espacios innecesarios al inicio y final
     return respuesta.strip()
+
