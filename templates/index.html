@@ -3,175 +3,222 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interfaz Chatbot</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f6;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-        }
-        .chat-container {
-            width: 100%;
-            max-width: 600px;
-            background-color: #ffffff;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            padding: 20px;
-            margin-top: 50px;
-        }
-        .header {
-            text-align: center;
-            color: #333;
-            border-bottom: 2px solid #eaeaea;
-            padding-bottom: 15px;
-            margin-bottom: 20px;
-        }
-        .message-box {
-            background-color: #e9ecef;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            color: #495057;
-            text-align: center;
-        }
-        .chat-history {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-bottom: 20px;
-            padding: 15px;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            height: 400px; /* Altura fija con scroll */
-            overflow-y: auto;
-            background-color: #fafafa;
-        }
-        .user-msg {
-            align-self: flex-end;
-            background-color: #007bff;
-            color: white;
-            padding: 12px 18px;
-            border-radius: 18px 18px 0 18px;
-            max-width: 80%;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-        .bot-msg {
-            align-self: flex-start;
-            background-color: #28a745;
-            color: white;
-            padding: 12px 18px;
-            border-radius: 18px 18px 18px 0;
-            max-width: 80%;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            white-space: pre-wrap; /* Para respetar saltos de línea */
-        }
-        .empty-history {
-            color: #999;
-            text-align: center;
-            font-style: italic;
-            margin: auto;
-        }
-        form {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        .footer-actions {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 15px;
-        }
-        .clear-btn {
-            font-size: 14px;
-            color: #dc3545;
-            text-decoration: none;
-            padding: 5px 10px;
-            border: 1px solid #dc3545;
-            border-radius: 5px;
-            transition: all 0.3s;
-        }
-        .clear-btn:hover {
-            background-color: #dc3545;
-            color: white;
-        }
-        input[type="text"] {
-            flex-grow: 1;
-            padding: 12px 15px;
-            border: 1px solid #ced4da;
-            border-radius: 20px;
-            font-size: 16px;
-            outline: none;
-            transition: border-color 0.3s;
-        }
-        input[type="text"]:focus {
-            border-color: #80bdff;
-        }
-        button[type="submit"] {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            transition: background-color 0.3s;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-    </style>
+    <title>Rainbow - AI Chatbot</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
 
-    <div class="chat-container">
-        <div class="header">
-            <h2>💬 Mi Chatbot Integrado</h2>
-        </div>
-
-        <!-- Demostración de comunicación Back-Front con Jinja2 (Variables simples) -->
-        <div class="message-box">
-            <strong>Notificación del Sistema:</strong> {{ mensaje_bienvenida }}
-        </div>
-
-        <div id="chat-history" class="chat-history">
-            {% if historial %}
-                {% for interact in historial %}
-                    <div class="user-msg">
-                        <strong>Tú:</strong><br>
-                        {{ interact.usuario }}
-                    </div>
-                    <div class="bot-msg">
-                        <strong>Agente:</strong><br>
-                        {{ interact.bot }}
-                    </div>
-                {% endfor %}
-            {% else %}
-                <div class="empty-history">El historial de chat está vacío. Inicia la conversación abajo.</div>
-            {% endif %}
-        </div>
-
-        <!-- Formulario que hace POST a la ruta principal '/' -->
-        <form method="POST" action="/">
-            <input type="text" name="pregunta" placeholder="Escribe tu pregunta aquí..." required autocomplete="off" autofocus>
-            <button type="submit">Enviar</button>
-        </form>
-
-        <div class="footer-actions">
-            <span></span> <!-- Espaciador -->
-            <a href="/limpiar" class="clear-btn">Limpiar Historial</a>
-        </div>
+    <div class="bg-circles">
+        <div class="circle circle-yellow"></div>
+        <div class="circle circle-pink"></div>
+        <div class="circle circle-blue"></div>
+        <div class="circle circle-purple"></div>
     </div>
 
-    <script>
-        // Auto-scroll al fondo del historial al cargar la página
-        const chatHistory = document.getElementById('chat-history');
-        chatHistory.scrollTop = chatHistory.scrollHeight;
-    </script>
+    <div class="container">
 
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <svg viewBox="0 0 200 200" width="44" height="44" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="cPetalS" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" stop-color="#ffc4a3"/>
+                                    <stop offset="100%" stop-color="#ff9b78"/>
+                                </linearGradient>
+                                <linearGradient id="pPetalS" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" stop-color="#ffbac7"/>
+                                    <stop offset="100%" stop-color="#ff95ab"/>
+                                </linearGradient>
+                                <linearGradient id="oPetalS" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" stop-color="#ffd6b0"/>
+                                    <stop offset="100%" stop-color="#ffb98a"/>
+                                </linearGradient>
+                                <linearGradient id="bPetalS" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" stop-color="#aabcef"/>
+                                    <stop offset="100%" stop-color="#8a9fdb"/>
+                                </linearGradient>
+                                <linearGradient id="vPetalS" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" stop-color="#b9a4e9"/>
+                                    <stop offset="100%" stop-color="#9b86d4"/>
+                                </linearGradient>
+                            </defs>
+                            <g stroke="#ffffff" stroke-width="3" stroke-linejoin="round">
+                                <path d="M 60 165 Q 45 160 40 138 Q 60 150 80 150 Q 75 162 60 165 Z" fill="url(#vPetalS)"/>
+                                <path d="M 140 165 Q 155 160 160 138 Q 140 150 120 150 Q 125 162 140 165 Z" fill="url(#vPetalS)"/>
+                                <path d="M 80 150 Q 40 145 30 110 Q 65 125 100 125 Q 95 145 80 150 Z" fill="url(#bPetalS)"/>
+                                <path d="M 120 150 Q 160 145 170 110 Q 135 125 100 125 Q 105 145 120 150 Z" fill="url(#bPetalS)"/>
+                                <path d="M 100 125 Q 55 115 48 65 Q 80 85 100 110 Z" fill="url(#oPetalS)"/>
+                                <path d="M 100 125 Q 145 115 152 65 Q 120 85 100 110 Z" fill="url(#oPetalS)"/>
+                                <path d="M 100 110 Q 75 90 78 45 Q 92 70 100 100 Z" fill="url(#pPetalS)"/>
+                                <path d="M 100 110 Q 125 90 122 45 Q 108 70 100 100 Z" fill="url(#pPetalS)"/>
+                                <path d="M 100 130 Q 78 90 100 35 Q 122 90 100 130 Z" fill="url(#cPetalS)"/>
+                            </g>
+                        </svg>
+                    </div>
+                    <span class="logo-text">RAINBOW</span>
+                </div>
+            </div>
+
+            <a class="new-chat-btn" href="{{ url_for('limpiar') }}">
+                <span>+</span> Nueva conversacion
+            </a>
+
+            <div class="search-box">
+                <input type="text" placeholder="Buscar chats...">
+            </div>
+
+            <div class="section-title">PINNED</div>
+            <div class="chat-item">
+                <span class="chat-item-icon">.</span>
+                <div class="chat-item-content">
+                    <div class="chat-item-title">React performance tips</div>
+                    <div class="chat-item-preview">How to optimize renders...</div>
+                </div>
+            </div>
+
+            <div class="section-title">RECENT</div>
+            <div class="chat-item">
+                <span class="chat-item-icon">.</span>
+                <div class="chat-item-content">
+                    <div class="chat-item-title">Quantum computing</div>
+                    <div class="chat-item-preview">Superposition...</div>
+                </div>
+            </div>
+
+            <div class="settings">
+                <span></span> Settings
+            </div>
+        </aside>
+
+        <main class="main">
+
+            <div class="top-bar">
+                <div class="status">Online</div>
+                <div class="user-info">
+                    <div class="user-info-text">
+                        <div class="user-name">Usuario</div>
+                        <div class="user-plan">Pro Plan</div>
+                    </div>
+                    <div class="user-avatar">U</div>
+                </div>
+            </div>
+
+            {% if not historial %}
+            <div class="welcome">
+                <svg class="welcome-logo" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="centerPetalBig" x1="50%" y1="0%" x2="50%" y2="100%">
+                            <stop offset="0%" stop-color="#ffcdb0"/>
+                            <stop offset="100%" stop-color="#ff9b78"/>
+                        </linearGradient>
+                        <linearGradient id="pinkPetalBig" x1="50%" y1="0%" x2="50%" y2="100%">
+                            <stop offset="0%" stop-color="#ffc1cd"/>
+                            <stop offset="100%" stop-color="#ff95ab"/>
+                        </linearGradient>
+                        <linearGradient id="orangePetalBig" x1="50%" y1="0%" x2="50%" y2="100%">
+                            <stop offset="0%" stop-color="#ffdcba"/>
+                            <stop offset="100%" stop-color="#ffb98a"/>
+                        </linearGradient>
+                        <linearGradient id="bluePetalBig" x1="50%" y1="0%" x2="50%" y2="100%">
+                            <stop offset="0%" stop-color="#b3c4f1"/>
+                            <stop offset="100%" stop-color="#8a9fdb"/>
+                        </linearGradient>
+                        <linearGradient id="purplePetalBig" x1="50%" y1="0%" x2="50%" y2="100%">
+                            <stop offset="0%" stop-color="#c4b1ec"/>
+                            <stop offset="100%" stop-color="#9b86d4"/>
+                        </linearGradient>
+                    </defs>
+                    <g stroke="#ffffff" stroke-width="5" stroke-linejoin="round" stroke-linecap="round">
+                        <path d="M 200 335 C 160 335 130 320 115 285 C 145 305 175 308 200 305 C 215 318 212 330 200 335 Z" fill="url(#purplePetalBig)"/>
+                        <path d="M 200 335 C 240 335 270 320 285 285 C 255 305 225 308 200 305 C 185 318 188 330 200 335 Z" fill="url(#purplePetalBig)"/>
+                        <path d="M 200 305 C 130 305 80 280 55 215 C 100 235 145 245 195 245 C 215 270 215 295 200 305 Z" fill="url(#bluePetalBig)"/>
+                        <path d="M 200 305 C 270 305 320 280 345 215 C 300 235 255 245 205 245 C 185 270 185 295 200 305 Z" fill="url(#bluePetalBig)"/>
+                        <path d="M 200 270 C 140 250 100 200 90 115 C 130 145 165 185 195 230 C 210 250 215 265 200 270 Z" fill="url(#orangePetalBig)"/>
+                        <path d="M 200 270 C 260 250 300 200 310 115 C 270 145 235 185 205 230 C 190 250 185 265 200 270 Z" fill="url(#orangePetalBig)"/>
+                        <path d="M 200 250 C 165 220 150 165 158 90 C 180 130 195 175 200 225 C 205 240 205 248 200 250 Z" fill="url(#pinkPetalBig)"/>
+                        <path d="M 200 250 C 235 220 250 165 242 90 C 220 130 205 175 200 225 C 195 240 195 248 200 250 Z" fill="url(#pinkPetalBig)"/>
+                        <path d="M 200 280 C 175 230 170 160 200 75 C 230 160 225 230 200 280 Z" fill="url(#centerPetalBig)"/>
+                    </g>
+                </svg>
+
+                <h1 class="welcome-title">Hola, soy <span class="gradient">Rainbow</span></h1>
+                <p class="welcome-subtitle">{{ mensaje_bienvenida }}</p>
+
+                <div class="suggestion-grid">
+                    <div class="suggestion-card card-blue">
+                        <div class="card-header">
+                            <span class="card-icon">&lt;/&gt;</span>
+                            <span class="card-title">Codigo</span>
+                        </div>
+                        <p class="card-text">Ayudame con un componente...</p>
+                    </div>
+                    <div class="suggestion-card card-purple">
+                        <div class="card-header">
+                            <span class="card-icon">.</span>
+                            <span class="card-title">Analizar</span>
+                        </div>
+                        <p class="card-text">Explica las diferencias...</p>
+                    </div>
+                    <div class="suggestion-card card-green">
+                        <div class="card-header">
+                            <span class="card-icon">.</span>
+                            <span class="card-title">Traducir</span>
+                        </div>
+                        <p class="card-text">Traduce este texto...</p>
+                    </div>
+                    <div class="suggestion-card card-pink">
+                        <div class="card-header">
+                            <span class="card-icon">.</span>
+                            <span class="card-title">Crear</span>
+                        </div>
+                        <p class="card-text">Escribe un cuento corto...</p>
+                    </div>
+                    <div class="suggestion-card card-yellow">
+                        <div class="card-header">
+                            <span class="card-icon">.</span>
+                            <span class="card-title">Optimizar</span>
+                        </div>
+                        <p class="card-text">Revisa mi enfoque...</p>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="chat-area">
+                {% for entrada in historial %}
+                    <div class="message user">
+                        <div class="message-avatar">U</div>
+                        <div class="message-bubble">{{ entrada.usuario }}</div>
+                    </div>
+                    <div class="message bot">
+                        <div class="message-avatar">R</div>
+                        <div class="message-bubble">{{ entrada.bot }}</div>
+                    </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="input-area">
+                <form id="chat-form" method="POST" action="{{ url_for('index') }}" class="input-container">
+                    <div class="input-options">
+                        <button type="button" class="option-btn active">Web search</button>
+                        <button type="button" class="option-btn">Fast mode</button>
+                        <button type="button" class="option-btn">Attach</button>
+                    </div>
+                    <div class="input-row">
+                        <button type="button" class="mic-btn">.</button>
+                        <textarea id="mensaje-input" name="pregunta" placeholder="Preguntame lo que quieras... (Shift+Enter = nueva linea)" rows="2" required autofocus></textarea>
+                        <button type="submit" class="send-btn">&gt;</button>
+                    </div>
+                </form>
+                <p class="footer-note">Rainbow puede cometer errores. Verifica la informacion.</p>
+            </div>
+
+        </main>
+
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

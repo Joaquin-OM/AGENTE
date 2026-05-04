@@ -1,84 +1,87 @@
 import os
 from flask import Flask, render_template, request, session, redirect, url_for
-from dotenv import load_dotenv
-from agente import Agente
-from IA import generar_respuesta
 
-# Cargar variables de entorno desde .env
-load_dotenv()
+# --- Carga opcional de variables de entorno ---
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    print("Aviso: 'python-dotenv' no instalado. Se ignorara el archivo .env.")
+
+# --- Agente interno ---
+from agente import Agente
+
+# --- IA generativa opcional ---
+try:
+    from IA import generar_respuesta
+    IA_DISPONIBLE = True
+except Exception as e:
+    print("Aviso: IA generativa no disponible (" + str(e) + ").")
+    print("       Para activarla: pip install transformers torch")
+    IA_DISPONIBLE = False
+    def generar_respuesta(pregunta):
+        return ("Lo siento, no encontre informacion sobre eso en mi documento "
+                "y la IA generativa no esta disponible.")
 
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'clave_por_defecto_no_segura')
 
-# Instanciar el agente una sola vez al cargar la aplicación Flask
 ruta_documento = os.path.join(os.path.dirname(__file__), "documento.txt")
 mi_agente = Agente(ruta_documento)
 
-# --- FASE 2: Controlador Modular ---
+
 def procesar_mensaje(mensaje_usuario):
-    """
-    Controlador para procesar el mensaje del usuario conectando a tu Agente.
-    Si el documento interno no encuentra respuesta, usamos IA generativa (GPT2).
-    """
-    # Intentamos primero con nuestro agente interno
     respuesta_agente = mi_agente.responder(mensaje_usuario)
-    
-    # Si la respuesta es la de "no encontrado", usamos GPT-2 de transformers
-    if "Lo siento, no he encontrado información" in respuesta_agente:
+    if "Lo siento, no he encontrado" in respuesta_agente:
         try:
             return generar_respuesta(mensaje_usuario)
         except Exception as e:
-            return f"Hubo un error al generar la respuesta con IA: {e}"
-            
+            return "Hubo un error al generar la respuesta con IA: " + str(e)
     return respuesta_agente
 
-# --- FASE 1: Configuración de Flask y Rutas ---
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if 'historial' not in session:
         session['historial'] = []
-    
-    # Mensaje de bienvenida inicial
-    mensaje_bienvenida = "¡Hola! Soy tu asistente virtual. ¿En qué puedo ayudarte hoy?"
+
+    mensaje_bienvenida = "Hola! Soy tu asistente virtual. En que puedo ayudarte?"
 
     if request.method == 'POST':
         pregunta_usuario = request.form.get('pregunta', '').strip()
-        
         if pregunta_usuario:
             respuesta_chatbot = procesar_mensaje(pregunta_usuario)
-            # Guardamos en el historial (añadimos al final)
             session['historial'].append({
                 'usuario': pregunta_usuario,
                 'bot': respuesta_chatbot
             })
-            # Marcamos la sesión como modificada para que Flask la guarde
             session.modified = True
 
     return render_template(
-        'index.html', 
+        'index.html',
         mensaje_bienvenida=mensaje_bienvenida,
         historial=session['historial']
     )
+
 
 @app.route('/limpiar')
 def limpiar():
     session.pop('historial', None)
     return redirect(url_for('index'))
 
-if __name__ == '__main__':
-    # Obtener configuración del entorno
-    debug_mode = os.getenv('DEBUG', 'False').lower() == 'true'
-    port = int(os.getenv('PORT', 5000))
 
+if __name__ == '__main__':
+    debug_mode = os.getenv('DEBUG', 'True').lower() == 'true'
+    port = int(os.getenv('PORT', 5000))
     if debug_mode:
-        print(f"Iniciando en modo DESARROLLO (Debug={debug_mode}) en el puerto {port}")
+        print("Iniciando en DESARROLLO en puerto " + str(port))
+        print("Abre http://127.0.0.1:" + str(port))
         app.run(debug=True, port=port)
     else:
-        print(f"Iniciando en modo PRODUCCIÓN con Waitress en el puerto {port}")
+        print("Iniciando en PRODUCCION en puerto " + str(port))
         try:
             from waitress import serve
             serve(app, host='0.0.0.0', port=port)
         except ImportError:
-            print("Error: 'waitress' no está instalado. Ejecuta 'pip install waitress'")
-            print("Iniciando con servidor Flask por defecto (NO recomendado para producción)...")
-            app.run(debug=False, port=port)
+            print("Aviso: 'waitress' no instalado, usando servidor Flask.")
+            app.run(debug=False, host='0.0.0.0', port=port)
