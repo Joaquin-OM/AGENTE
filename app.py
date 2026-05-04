@@ -1,10 +1,14 @@
 import os
 from flask import Flask, render_template, request, session, redirect, url_for
+from dotenv import load_dotenv
 from agente import Agente
 from IA import generar_respuesta
 
+# Cargar variables de entorno desde .env
+load_dotenv()
+
 app = Flask(__name__)
-app.secret_key = 'clave_secreta_para_sesion' # Necesario para usar session
+app.secret_key = os.getenv('SECRET_KEY', 'clave_por_defecto_no_segura')
 
 # Instanciar el agente una sola vez al cargar la aplicación Flask
 ruta_documento = os.path.join(os.path.dirname(__file__), "documento.txt")
@@ -62,5 +66,19 @@ def limpiar():
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
-    # Ejecutamos la aplicación Flask
-    app.run(debug=True, port=5000)
+    # Obtener configuración del entorno
+    debug_mode = os.getenv('DEBUG', 'False').lower() == 'true'
+    port = int(os.getenv('PORT', 5000))
+
+    if debug_mode:
+        print(f"Iniciando en modo DESARROLLO (Debug={debug_mode}) en el puerto {port}")
+        app.run(debug=True, port=port)
+    else:
+        print(f"Iniciando en modo PRODUCCIÓN con Waitress en el puerto {port}")
+        try:
+            from waitress import serve
+            serve(app, host='0.0.0.0', port=port)
+        except ImportError:
+            print("Error: 'waitress' no está instalado. Ejecuta 'pip install waitress'")
+            print("Iniciando con servidor Flask por defecto (NO recomendado para producción)...")
+            app.run(debug=False, port=port)
