@@ -1,30 +1,30 @@
-from transformers import pipeline
+import ollama
 
-# Usamos un modelo especializado en español para evitar respuestas sin sentido
-# 'datificate/gpt2-small-spanish' es ligero y entiende perfectamente nuestro idioma
-chatbot = pipeline("text-generation", model="datificate/gpt2-small-spanish", device=-1)
+# Ya no usamos transformers ni torch, sino la librería de python para Ollama.
+# Ollama nos permite ejecutar modelos grandes (LLMs) como Mistral de forma local y eficiente.
 
 def generar_respuesta(pregunta):
-    # Prompt en español para un modelo en español
-    prompt = f"Pregunta: {pregunta}\nRespuesta:"
-
-    resultado = chatbot(
-        prompt,
-        max_new_tokens=50,
-        do_sample=True,
-        temperature=0.3, # Bajamos la temperatura para que sea menos errático
-        repetition_penalty=1.2,
-        pad_token_id=50256
-    )
-
-    texto = resultado[0]["generated_text"]
-
-    # Limpiamos para obtener solo la respuesta generada
-    if "Respuesta:" in texto:
-        respuesta = texto.split("Respuesta:")[-1]
-    else:
-        respuesta = texto.replace(prompt, "")
-
+    # Creamos la lista de mensajes que le enviaremos al modelo.
+    # El rol "system" sirve para darle instrucciones generales de comportamiento.
+    # El rol "user" es la pregunta que hace el usuario.
+    mensajes = [
+        {"role": "system", "content": "Eres un asistente útil y amable que responde en español de manera clara y concisa."},
+        {"role": "user", "content": pregunta}
+    ]
+    
+    try:
+        # Llamamos al modelo 'mistral' mediante Ollama
+        # Esta función se conecta a la API local de Ollama (por defecto en el puerto 11434)
+        resultado = ollama.chat(
+            model='mistral', 
+            messages=mensajes
+        )
+        
+        # El resultado es un diccionario. Extraemos el contenido del mensaje generado.
+        respuesta = resultado['message']['content']
+        
+    except Exception as e:
+        # Si hay un error (ej. Ollama no está ejecutándose, o Mistral no está descargado), lo capturamos.
+        respuesta = f"Error al conectar con Ollama o el modelo Mistral: {str(e)}"
+        
     return respuesta.strip()
-
-
